@@ -19,53 +19,6 @@ std::map<std::string, double> parseData(std::ifstream &datafile) {
   return data;
 }
 
-void manageInput(std::ifstream &inputfile,
-                 std::map<std::string, double> &data) {
-  std::string line;
-
-  std::map<std::string, double> input;
-
-  std::string header;
-  std::getline(inputfile, header);
-
-  if (header.find("date") == std::string::npos ||
-      header.find("value") == std::string::npos) {
-    throw;
-  }
-
-  while (std::getline(inputfile, line)) {
-
-    if (!line[0])
-      continue;
-
-    size_t separator = line.find('|');
-    line = remove_all_whitespace(line);
-
-    if (separator == std::string::npos)
-      throw std::runtime_error("bad input: " + line);
-
-    std::string date = line.substr(0, separator - 1);
-    std::cout << date << std::endl;
-
-    std::string priceStr = line.substr(separator);
-
-    char *endp;
-    double units = strtod(priceStr.c_str(), &endp);
-
-    if (endp == priceStr)
-      throw std::runtime_error("must provide a value");
-
-    if (units > INT_MAX)
-      throw std::runtime_error("too large number");
-
-    if (units < 0)
-      throw std::runtime_error("not a positive number");
-
-    double value = data[date] * units;
-    std::cout << value << std::endl;
-  }
-}
-
 std::string getDayBefore(const std::string &date) {
 
   int day = atoi(date.substr(8, 2).c_str());
@@ -126,13 +79,62 @@ std::string getDayBefore(const std::string &date) {
 
 std::string findClosestDate(std::string date,
                             std::map<std::string, double> &data) {
-
   std::map<std::string, double>::iterator it = data.find(date);
 
-  if (it == data.end()) {
+  while (it == data.end()) {
+    date = getDayBefore(date);
   }
 
-  return "a";
+  // std::cout << date << std::endl;
+
+  return date;
+}
+
+void manageInput(std::ifstream &inputfile,
+                 std::map<std::string, double> &data) {
+  std::string line;
+
+  std::map<std::string, double> input;
+
+  std::string header;
+  std::getline(inputfile, header);
+
+  if (header.find("date") == std::string::npos ||
+      header.find("value") == std::string::npos) {
+    throw;
+  }
+
+  while (std::getline(inputfile, line)) {
+
+    if (!line[0])
+      continue;
+
+    size_t separator = line.find('|');
+    line = remove_all_whitespace(line);
+
+    if (separator == std::string::npos)
+      throw std::runtime_error("bad input: " + line);
+
+    std::string date = line.substr(0, separator - 1);
+    std::cout << date << std::endl;
+
+    std::string priceStr = line.substr(separator);
+
+    char *endp;
+    double units = strtod(priceStr.c_str(), &endp);
+
+    if (endp == priceStr)
+      throw std::runtime_error("must provide a value");
+
+    if (units > INT_MAX)
+      throw std::runtime_error("too large number");
+
+    if (units < 0)
+      throw std::runtime_error("not a positive number");
+
+    double value = data[findClosestDate(date, data)] * units;
+    std::cout << value << std::endl;
+  }
 }
 
 int main() {
@@ -141,10 +143,7 @@ int main() {
   std::ifstream inputfile("input.txt");
   std::map<std::string, double> data = parseData(datafile);
 
-  // manageInput(inputfile, data);
-
-  std::string date = "2020-01-01";
-  getDayBefore(date);
+  manageInput(inputfile, data);
 
   return 0;
 }
