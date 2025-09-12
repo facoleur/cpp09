@@ -1,3 +1,5 @@
+// main.cpp
+
 #include "header.hpp"
 
 std::map<std::string, double> parseData(std::ifstream &datafile) {
@@ -77,23 +79,35 @@ std::string getDayBefore(const std::string &date) {
   return newDate;
 }
 
-std::string findClosestDate(std::string date,
+std::string findClosestDate(std::string &date,
                             std::map<std::string, double> &data) {
-  std::map<std::string, double>::iterator it = data.find(date);
 
-  while (it == data.end()) {
+  std::string foundDate = "0";
+
+  while (1) {
+    for (std::map<std::string, double>::iterator it = data.begin();
+         it != data.end(); it++) {
+      if (it->first == date) {
+        foundDate = date;
+        std::cout << foundDate << std::endl;
+        return foundDate;
+        break;
+        // date = getDayBefore(date);
+      }
+    }
+
+    if (foundDate != "0") {
+      std::cout << foundDate << std::endl;
+      return foundDate;
+    }
     date = getDayBefore(date);
   }
-
-  // std::cout << date << std::endl;
-
-  return date;
 }
 
 void manageInput(std::ifstream &inputfile,
                  std::map<std::string, double> &data) {
   std::string line;
-
+  (void)data;
   std::map<std::string, double> input;
 
   std::string header;
@@ -116,7 +130,6 @@ void manageInput(std::ifstream &inputfile,
       throw std::runtime_error("bad input: " + line);
 
     std::string date = line.substr(0, separator - 1);
-    std::cout << date << std::endl;
 
     std::string priceStr = line.substr(separator);
 
@@ -132,8 +145,11 @@ void manageInput(std::ifstream &inputfile,
     if (units < 0)
       throw std::runtime_error("not a positive number");
 
-    double value = data[findClosestDate(date, data)] * units;
-    std::cout << value << std::endl;
+    findClosestDate
+
+    // std::cout << date << std::endl;
+    // double value = data[findClosestDate(date, data)] * units;
+    // std::cout << value << std::endl;
   }
 }
 
