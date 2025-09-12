@@ -2,6 +2,30 @@
 
 #include "header.hpp"
 
+bool isValidDate(const std::string &date) {
+  int day = atoi(date.substr(8, 2).c_str());
+  int month = atoi(date.substr(5, 2).c_str());
+  int year = atoi(date.substr(0, 4).c_str());
+
+  if (month > 12)
+    return false;
+
+  if (day > 31)
+    return false;
+
+  if (month == 2 && year % 4 != 0 && day > 28)
+    return false;
+
+  if (month == 2 && year % 4 == 0 && day > 29)
+    return false;
+
+  if ((month < 7 ? month % 2 == 0 : month % 2 == 1) && day > 30) {
+    return false;
+  }
+
+  return true;
+}
+
 std::map<std::string, double> parseData(std::ifstream &datafile) {
   std::string line;
 
@@ -74,7 +98,7 @@ std::string getDayBefore(const std::string &date) {
   yearStr = itoa(year);
 
   std::string newDate = yearStr + "-" + monthStr + "-" + dayStr;
-  std::cout << newDate << std::endl;
+  // std::cout << newDate << std::endl;
 
   return newDate;
 }
@@ -82,26 +106,25 @@ std::string getDayBefore(const std::string &date) {
 std::string findClosestDate(std::string &date,
                             std::map<std::string, double> &data) {
 
-  std::string foundDate = "0";
+  if (date < data.begin()->first) {
+    // std::cout << "found date: " << data.begin()->first << std::endl;
+    return data.begin()->first;
+  }
 
-  while (1) {
+  std::string foundDate = "";
+
+  for (std::string d = date; d != data.begin()->first; d = getDayBefore(d)) {
     for (std::map<std::string, double>::iterator it = data.begin();
          it != data.end(); it++) {
-      if (it->first == date) {
-        foundDate = date;
-        std::cout << foundDate << std::endl;
+
+      if (it->first == d) {
+        foundDate = d;
+        // std::cout << "found date: " << foundDate << std::endl;
         return foundDate;
-        break;
-        // date = getDayBefore(date);
       }
     }
-
-    if (foundDate != "0") {
-      std::cout << foundDate << std::endl;
-      return foundDate;
-    }
-    date = getDayBefore(date);
   }
+  return NULL;
 }
 
 void manageInput(std::ifstream &inputfile,
@@ -145,11 +168,15 @@ void manageInput(std::ifstream &inputfile,
     if (units < 0)
       throw std::runtime_error("not a positive number");
 
-    findClosestDate
+    if (!isValidDate(date))
+      throw std::runtime_error("not valid date");
 
-    // std::cout << date << std::endl;
-    // double value = data[findClosestDate(date, data)] * units;
-    // std::cout << value << std::endl;
+    const std::string existingDate = findClosestDate(date, data);
+
+    const int price = data[existingDate];
+
+    std::cout << existingDate << " => " << price << " = " << price * units
+              << std::endl;
   }
 }
 
@@ -159,7 +186,12 @@ int main() {
   std::ifstream inputfile("input.txt");
   std::map<std::string, double> data = parseData(datafile);
 
-  manageInput(inputfile, data);
+  try {
+
+    manageInput(inputfile, data);
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+  }
 
   return 0;
 }
