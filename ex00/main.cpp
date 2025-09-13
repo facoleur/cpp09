@@ -2,133 +2,77 @@
 
 #include "header.hpp"
 
-bool isValidDate(const std::string &date) {
-  int day = atoi(date.substr(8, 2).c_str());
-  int month = atoi(date.substr(5, 2).c_str());
-  int year = atoi(date.substr(0, 4).c_str());
-
-  if (month > 12)
-    return false;
-
-  if (day > 31)
-    return false;
-
-  if (month == 2 && year % 4 != 0 && day > 28)
-    return false;
-
-  if (month == 2 && year % 4 == 0 && day > 29)
-    return false;
-
-  if ((month < 7 ? month % 2 == 0 : month % 2 == 1) && day > 30) {
-    return false;
-  }
-
-  return true;
-}
-
 std::map<std::string, double> parseData(std::ifstream &datafile) {
   std::string line;
 
   std::map<std::string, double> data;
 
+  std::getline(datafile, line);
+
   while (std::getline(datafile, line)) {
     int comma = line.find(',');
 
     std::string date = line.substr(0, comma);
+
+    if (!isValidDate(date)) {
+      throw std::runtime_error("data: unvalid date");
+    }
+
     std::string price = line.substr(comma + 1);
 
-    data[date] = strtod(price.c_str(), NULL);
+    char *endp = 0;
+    data[date] = strtod(price.c_str(), &endp);
 
-    // std::cout << date << ": " << data[date] << std::endl;
+    if (price.c_str() == endp)
+      throw std::runtime_error("data: unvalid price");
   }
+
+  if (data.empty())
+    throw std::runtime_error("data: no data");
 
   return data;
 }
 
-std::string getDayBefore(const std::string &date) {
+struct s_line {
+  std::string date;
+  double units;
+};
 
-  int day = atoi(date.substr(8, 2).c_str());
-  int month = atoi(date.substr(5, 2).c_str());
-  int year = atoi(date.substr(0, 4).c_str());
+s_line parseLine(std::string &line) {
+  line = remove_all_whitespace(line);
+  size_t separator = line.find('|');
 
-  if (day > 1) {
-    day--;
-  } else if (month > 1) {
-    month--;
-    if (month == 2) {
-      if (year % 4 == 0)
-        day = 29;
-      else
-        day = 28;
-    } else {
-      if (month < 8) {
-        if (month % 2 == 0) {
-          day = 30;
-        } else {
-          day = 31;
-        }
-      } else {
-        if (month % 2 == 0) {
-          day = 31;
-        } else {
-          day = 30;
-        }
-      }
-    }
-  } else {
-    year--;
-    day = 31;
-    month = 12;
-  }
+  if (separator == std::string::npos)
+    throw std::runtime_error("bad input: " + line);
 
-  std::string dayStr;
-  std::string monthStr;
-  std::string yearStr;
+  std::string date = line.substr(0, separator);
 
-  if (day > 9) {
-    dayStr = itoa(day);
-  } else {
-    dayStr = "0" + itoa(day);
-  }
-  if (month > 9) {
-    monthStr = itoa(month);
-  } else {
-    monthStr = "0" + itoa(month);
-  }
-  yearStr = itoa(year);
+  std::string priceStr = line.substr(separator + 1);
 
-  std::string newDate = yearStr + "-" + monthStr + "-" + dayStr;
-  // std::cout << newDate << std::endl;
+  char *endp;
+  double units = strtod(priceStr.c_str(), &endp);
 
-  return newDate;
+  if (endp == priceStr.c_str())
+    throw std::runtime_error("must provide a value");
+
+  if (units > 1000)
+    throw std::runtime_error("too large number");
+
+  if (units < 0)
+    throw std::runtime_error("not a positive number");
+
+  if (!isValidDate(date))
+    throw std::runtime_error("not valid date");
+
+  s_line res;
+
+  res.date = date;
+  res.units = units;
+
+  return res;
 }
 
-std::string findClosestDate(std::string &date,
-                            std::map<std::string, double> &data) {
-
-  if (date < data.begin()->first) {
-    // std::cout << "found date: " << data.begin()->first << std::endl;
-    return data.begin()->first;
-  }
-
-  std::string foundDate = "";
-
-  for (std::string d = date; d != data.begin()->first; d = getDayBefore(d)) {
-    for (std::map<std::string, double>::iterator it = data.begin();
-         it != data.end(); it++) {
-
-      if (it->first == d) {
-        foundDate = d;
-        // std::cout << "found date: " << foundDate << std::endl;
-        return foundDate;
-      }
-    }
-  }
-  return NULL;
-}
-
-void manageInput(std::ifstream &inputfile,
-                 std::map<std::string, double> &data) {
+void compute(std::ifstream &inputfile, std::map<std::string, double> &data) {
   std::string line;
   (void)data;
   std::map<std::string, double> input;
@@ -138,57 +82,42 @@ void manageInput(std::ifstream &inputfile,
 
   if (header.find("date") == std::string::npos ||
       header.find("value") == std::string::npos) {
-    throw;
+    throw std::runtime_error("Error: header is not valid.");
   }
 
   while (std::getline(inputfile, line)) {
-
     if (!line[0])
       continue;
 
-    size_t separator = line.find('|');
-    line = remove_all_whitespace(line);
+    try {
+      s_line parsedLine = parseLine(line);
 
-    if (separator == std::string::npos)
-      throw std::runtime_error("bad input: " + line);
+      const std::string closestDate = findClosestEntry(data, parsedLine.date);
+      const double price = data[closestDate];
 
-    std::string date = line.substr(0, separator - 1);
+      std::cout << closestDate << " => " << price << " = "
+                << price * parsedLine.units << std::endl;
 
-    std::string priceStr = line.substr(separator);
-
-    char *endp;
-    double units = strtod(priceStr.c_str(), &endp);
-
-    if (endp == priceStr)
-      throw std::runtime_error("must provide a value");
-
-    if (units > INT_MAX)
-      throw std::runtime_error("too large number");
-
-    if (units < 0)
-      throw std::runtime_error("not a positive number");
-
-    if (!isValidDate(date))
-      throw std::runtime_error("not valid date");
-
-    const std::string existingDate = findClosestDate(date, data);
-
-    const int price = data[existingDate];
-
-    std::cout << existingDate << " => " << price << " = " << price * units
-              << std::endl;
+    } catch (std::exception &e) {
+      std::cout << e.what() << std::endl;
+    }
   }
 }
 
-int main() {
+int main(int ac, char **av) {
 
+  if (ac != 2 || isDirectory(av[1]) || !canOpenFile(av[1], "r")) {
+    std::cout << "Error: could not open file." << std::endl;
+    return 1;
+  }
+
+  std::ifstream inputfile(av[1]);
   std::ifstream datafile("data.csv");
-  std::ifstream inputfile("input.txt");
-  std::map<std::string, double> data = parseData(datafile);
 
   try {
+    std::map<std::string, double> data = parseData(datafile);
+    compute(inputfile, data);
 
-    manageInput(inputfile, data);
   } catch (std::exception &e) {
     std::cout << e.what() << std::endl;
   }
