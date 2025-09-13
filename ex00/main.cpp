@@ -38,9 +38,9 @@ struct s_line {
   double units;
 };
 
-s_line parseLine(std::string &line) {
-  line = remove_all_whitespace(line);
-  size_t separator = line.find('|');
+s_line parseLine(std::string &line, const char sep) {
+  line = removeAllWhitespace(line);
+  size_t separator = line.find(sep);
 
   if (separator == std::string::npos)
     throw std::runtime_error("bad input: " + line);
@@ -80,17 +80,22 @@ void compute(std::ifstream &inputfile, std::map<std::string, double> &data) {
   std::string header;
   std::getline(inputfile, header);
 
+  header = removeAllWhitespace(header);
   if (header.find("date") == std::string::npos ||
       header.find("value") == std::string::npos) {
     throw std::runtime_error("Error: header is not valid.");
   }
+
+  const char separator = header[4];
+  if (isalnum(separator))
+    throw std::runtime_error("bad separator");
 
   while (std::getline(inputfile, line)) {
     if (!line[0])
       continue;
 
     try {
-      s_line parsedLine = parseLine(line);
+      s_line parsedLine = parseLine(line, separator);
 
       const std::string closestDate = findClosestEntry(data, parsedLine.date);
       const double price = data[closestDate];

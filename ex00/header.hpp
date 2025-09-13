@@ -13,7 +13,7 @@
 #include <sys/stat.h>
 
 bool is_space(char c);
-std::string remove_all_whitespace(std::string &s);
+std::string removeAllWhitespace(std::string &s);
 std::string itoa(int value);
 bool canOpenFile(const char *path, const char *mode);
 bool isDirectory(const char *path);
