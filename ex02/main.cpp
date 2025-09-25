@@ -42,8 +42,8 @@ std::vector<pair> getMaximaWithIndex(std::vector<pair> pairs) {
 }
 
 // returns [value]
-std::vector<maxima> getMaxima(std::vector<std::pair<maxima, maxima> > pairs) {
-  std::vector<maxima> result;
+std::vector<indexValue> getMaxima(std::vector<std::pair<indexValue, indexValue> > pairs) {
+  std::vector<indexValue> result;
 
   for (size_t i = 0; i < pairs.size(); i++) {
     result.push_back(pairs[i].second);
@@ -52,11 +52,11 @@ std::vector<maxima> getMaxima(std::vector<std::pair<maxima, maxima> > pairs) {
   return result;
 }
 
-std::vector<std::pair<maxima, maxima> > pairNumbers(std::vector<maxima> &numbers) {
-  std::vector<std::pair<maxima, maxima> > pairs;
+std::vector<std::pair<indexValue, indexValue> > pairNumbers(std::vector<indexValue> &numbers) {
+  std::vector<std::pair<indexValue, indexValue> > pairs;
 
-  for (std::vector<maxima>::iterator it = numbers.begin(); it != numbers.end();) {
-    std::vector<maxima>::iterator next = it;
+  for (std::vector<indexValue>::iterator it = numbers.begin(); it != numbers.end();) {
+    std::vector<indexValue>::iterator next = it;
     next++;
 
     if (next != numbers.end()) {
@@ -71,40 +71,22 @@ std::vector<std::pair<maxima, maxima> > pairNumbers(std::vector<maxima> &numbers
   return pairs;
 }
 
-std::vector<std::pair<size_t, size_t> > pairNumbers(std::vector<size_t> &numbers) {
-  std::vector<std::pair<size_t, size_t> > pairs;
-
-  for (std::vector<size_t>::iterator it = numbers.begin(); it != numbers.end();) {
-    std::vector<size_t>::iterator next = it;
-    next++;
-
-    if (next != numbers.end()) {
-      pairs.push_back(std::make_pair(*it, *next));
-      it = ++next;
-    } else {
-      pairs.push_back(std::make_pair(*it, *it));
-      break;
-    }
-  }
-
-  return pairs;
-}
-
-void orientPairs(std::vector<std::pair<maxima, maxima> > &pairs) {
-  for (std::vector<std::pair<maxima, maxima> >::iterator it = pairs.begin(); it != pairs.end(); it++) {
+void orientPairs(std::vector<std::pair<indexValue, indexValue> > &pairs) {
+  for (std::vector<std::pair<indexValue, indexValue> >::iterator it = pairs.begin();
+       it != pairs.end(); it++) {
     if ((*it).first.value > (*it).second.value) {
-      maxima temp = (*it).first;
+      indexValue temp = (*it).first;
       (*it).first = (*it).second;
       (*it).second = temp;
     }
   }
 }
 
-std::vector<std::pair<maxima, maxima> > addIndexes(std::vector<pair> &initialPairs) {
-  std::vector<std::pair<maxima, maxima> > res;
+std::vector<std::pair<indexValue, indexValue> > addIndexes(std::vector<pair> &initialPairs) {
+  std::vector<std::pair<indexValue, indexValue> > res;
 
   for (size_t i = 0; i < initialPairs.size(); i++) {
-    maxima a, b;
+    indexValue a, b;
     a.index = i;
     b.index = i;
     a.value = initialPairs[i].first;
@@ -115,69 +97,49 @@ std::vector<std::pair<maxima, maxima> > addIndexes(std::vector<pair> &initialPai
   return res;
 }
 
-void sort(std::vector<pair> &initialPairs) {
-  if (initialPairs.size() <= 1)
-    return;
-
-  std::vector<std::pair<maxima, maxima> > pairs = addIndexes(initialPairs);
-  std::vector<maxima> sortedMaxima;
-
-  while (pairs.size() > 1) {
-    std::vector<maxima> maximas = getMaxima(pairs);
-
-    for (std::vector<maxima>::iterator it = maximas.begin(); it != maximas.end(); ++it) {
-      sortedMaxima.push_back(*it);
-    }
-
-    std::vector<std::pair<maxima, maxima> > maximaPairs = pairNumbers(maximas);
-    orientPairs(maximaPairs);
-
-    pairs = maximaPairs;
+void coutPair(std::vector<std::pair<indexValue, indexValue> > &pairs) {
+  for (size_t i = 0; i < pairs.size(); ++i) {
+    std::cout << "pair index: " << i << ", first.value: " << pairs[i].first.value
+              << ", second.value: " << pairs[i].second.value << std::endl;
   }
-
-  sortedMaxima.push_back(pairs[0].first);
-  if (pairs[0].second.index != pairs[0].first.index)
-    sortedMaxima.push_back(pairs[0].second);
-
-  printVector(sortedMaxima);
 }
 
-// std::vector<pair> recursiveSort(std::vector<pair> &pairs) {
-
+// std::vector<indexValue> recursiveSort(std::vector<std::pair<indexValue, indexValue> > &pairs) {
 //   if (pairs.size() <= 1)
-//     return;
+//     return getMaxima(pairs);
 
-//   std::vector<pair> maxima = getMaximaWithIndex(pairs);
+//   std::vector<indexValue> maximas = getMaxima(pairs);
+//   std::vector<std::pair<indexValue, indexValue> > maximaPairs = pairNumbers(maximas);
+//   orientPairs(maximaPairs);
 
-//   std::vector<size_t> maximaValues;
-//   for (size_t i = 0; i < maxima.size(); ++i) {
-//     maximaValues.push_back(maxima[i].second);
-//   }
+//   std::vector<indexValue> sortedMaxima = recursiveSort(maximaPairs);
 
-//   std::vector<pair_of_pair> maximaPairs = pairNumbersWithIndex(maxima);
+//   std::cout << "pair size: " << pairs.size() << std::endl;
+//   coutPair(pairs);
 
-//   sortPairsOfPairs(maximaPairs);
-
-//   std::vector<pair> sortedMaxima;
-//   for (size_t i = 0; i < maximaPairs.size(); i++) {
-//     sortedMaxima.push_back(maximaPairs[i].second);
-//   }
-
-//   std::vector<pair> newpair recursiveSort(sortedMaxima);
-
-//   std::vector<pair> sorted;
-//   std::vector<bool> used(pairs.size(), false);
-
-//   for (size_t k = 0; k < sortedMaxima.size(); ++k) {
-//     size_t idx = sortedMaxima[k].first;
-//     if (!used[idx]) {
-//       sorted.push_back(pairs[idx]);
-//       used[idx] = true;
-//     }
-//   }
-
-//   pairs.swap(sorted);
+//   std::cout << std::endl;
 // }
+
+// void sort(std::vector<pair> &initialPairs) {
+//   std::vector<std::pair<indexValue, indexValue> > pairs = addIndexes(initialPairs);
+
+//   recursiveSort(pairs);
+// }
+
+indexValue makeIndexValue(size_t i, size_t v) {
+  indexValue res;
+  res.index = i;
+  res.value = v;
+  return res;
+}
+
+std::vector<indexValue> indexNumbers(std::vector<size_t> &v) {
+  std::vector<indexValue> res;
+  for (size_t i = 0; i < v.size(); i++) {
+    res.push_back(makeIndexValue(i, v[i]));
+  }
+  return res;
+}
 
 int main(int ac, const char **av) {
 
@@ -185,13 +147,18 @@ int main(int ac, const char **av) {
     return 1;
 
   std::vector<size_t> numbers = parse(av);
-  std::vector<pair> pairs = pairNumbers(numbers);
 
-  sort(pairs);
+  std::vector<indexValue> indexedNumbers = indexNumbers(numbers);
 
-  // std::vector<size_t> bigs = getMaximaWithIndex(pairs);
-  // printVector<size_t>(bigs);
+  // printVector(indexedNumbers);
 
-  jacobsthal();
+  std::vector<std::pair<indexValue, indexValue> > pairs = pairNumbers(indexedNumbers);
+
+  printPairs(pairs);
+
+  // sort(pairs);
+
   return 0;
 }
+
+void sortV2(std::vector<indexValue>) {}
