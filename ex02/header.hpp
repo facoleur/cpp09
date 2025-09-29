@@ -2,24 +2,41 @@
 
 #pragma once
 
+#include <algorithm>
+#include <cmath>
+#include <cstddef>
 #include <cstdlib>
+#include <ctime>
+#include <deque>
+#include <iomanip>
 #include <iostream>
 #include <utility>
 #include <vector>
 
-typedef std::vector<size_t>::iterator vec_it;
+extern size_t VEC_COUNT;
 
-typedef std::pair<size_t, size_t> pair;
-typedef std::pair<pair, pair> pair_of_pair;
+struct CountingLess {
+  bool operator()(const size_t &a, const size_t &b) const {
+    VEC_COUNT++;
+    return a < b;
+  }
+};
 
-typedef struct s_maxima {
-  size_t index;
-  size_t value;
-} indexValue;
+// utils
+double factorial(double n);
+int min_comparisons_bound(double n);
+int avg_comparisons_bound(unsigned int n);
 
-void printPairs(std::vector<std::pair<indexValue, indexValue> > &pairs,
-                const std::string &title = "print: ");
-void printVector(std::vector<indexValue> &v);
-void printVector(std::vector<size_t> &v);
+void printPairs(std::vector<std::pair<size_t, size_t> > &, const std::string &title = "");
+void printVector(std::vector<std::pair<size_t, size_t> > &v);
+void printVector(std::vector<size_t> &, const std::string & = "");
 
-std::string removeAllWhitespace(std::string &s);
+// algo templates
+template <typename Container> void parse(const char **, Container &);
+template <typename Container, typename PairContainer> PairContainer pairNumbers(Container &numbers);
+template <typename Container> Container jacobsthal(size_t);
+template <typename Container> Container jacobsthalOrdering(size_t, size_t);
+template <typename Container> Container fordJohnsonSortMaxima(const Container &);
+template <typename Container, typename PairContainer> void sort(PairContainer &, Container &, size_t);
+
+#include "algo.tpp"
