@@ -1,0 +1,4 @@
+# .clang-format
+Language: Cpp
+ColumnLimit: 160
+Standard: Cpp03

@@ -2,7 +2,8 @@
 
 #include "header.hpp"
 
-bool isOperator(const char c, const std::string &operators) {
+bool isOperator(const char c) {
+  const std::string operators = "+-*/";
   return operators.find_first_of(c) != std::string::npos;
 }
 
@@ -20,17 +21,13 @@ int calculator(const std::string &input) {
 
   std::stack<int> stack;
 
-  const std::string operators = "+-*/";
-
   for (size_t i = 0; i < input.length(); i++) {
-    if (i < 2 && isOperator(input[i], operators)) {
-      throw std::runtime_error("Error: unexpected operator " +
-                               std::string(1, input[i]));
+    if (i < 2 && isOperator(input[i])) {
+      throw std::runtime_error("Error: unexpected operator " + std::string(1, input[i]));
     }
 
-    if (!isdigit(input[i]) && !isOperator(input[i], operators)) {
-      throw std::runtime_error("Error: unexpected token " +
-                               std::string(1, input[i]));
+    if (!isdigit(input[i]) && !isOperator(input[i])) {
+      throw std::runtime_error("Error: unexpected token " + std::string(1, input[i]));
     }
 
     if (std::isdigit(input[i])) {
@@ -61,27 +58,28 @@ int calculator(const std::string &input) {
         break;
 
       default:
-        throw std::runtime_error("Error: unexpected token " +
-                                 std::string(1, op));
+        throw std::runtime_error("Error: unexpected token " + std::string(1, op));
         break;
       }
     }
   }
 
   if (stack.size() != 1) {
-    std::cout << stack.size() << std::endl;
-    throw std::runtime_error("Error: stack size should be 1");
+    std::ostringstream oss;
+    oss << "Error: stack size should be 1. Stack size: " << stack.size();
+    throw std::runtime_error(oss.str());
   }
 
   return stack.top();
 }
 
 int main(int argc, char const *argv[]) {
-  if (argc != 2)
+  if (argc != 2) {
+    std::cout << "usage: ./RPN \" <rpn expression> \"" << std::endl;
     return 1;
+  }
 
   std::string input = std::string(argv[1]);
-  input = removeAllWhitespace(input);
 
   try {
     int result = calculator(removeAllWhitespace(input));

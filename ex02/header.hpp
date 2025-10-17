@@ -10,12 +10,13 @@
 #include <deque>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <utility>
 #include <vector>
 
 extern size_t VEC_COUNT;
 
-struct CountingLess {
+struct Counter {
   bool operator()(const size_t &a, const size_t &b) const {
     VEC_COUNT++;
     return a < b;
@@ -23,10 +24,6 @@ struct CountingLess {
 };
 
 // utils
-double factorial(double n);
-int min_comparisons_bound(double n);
-int avg_comparisons_bound(unsigned int n);
-
 void printPairs(std::vector<std::pair<size_t, size_t> > &, const std::string &title = "");
 void printVector(std::vector<std::pair<size_t, size_t> > &v);
 void printVector(std::vector<size_t> &, const std::string & = "");

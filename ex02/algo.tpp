@@ -2,8 +2,29 @@
 
 #include "header.hpp"
 
-template <typename Container> void parse(const char **av, Container &numbers) {
+template <typename T> std::ostream &operator<<(std::ostream &os, const std::vector<T> &v) {
+  typename std::vector<T>::const_iterator it = v.begin();
+  while (it != v.end()) {
+    os << *it;
+    ++it;
+    if (it != v.end())
+      os << " ";
+  }
+  return os;
+}
 
+template <typename T> std::ostream &operator<<(std::ostream &os, const std::deque<T> &d) {
+  typename std::deque<T>::const_iterator it = d.begin();
+  while (it != d.end()) {
+    os << *it;
+    ++it;
+    if (it != d.end())
+      os << " ";
+  }
+  return os;
+}
+
+template <typename Container> void parse(const char **av, Container &numbers) {
   Container dup;
 
   if (!av[2]) {
@@ -67,46 +88,44 @@ template <typename Container> Container jacobsthalOrdering(size_t n, size_t size
   Container indices;
   Container j = jacobsthal<Container>(n);
 
-  for (size_t i = size % 2; i < j.size(); i++)
-    indices.push_back(j[i]);
+  for (size_t i = 0; i < j.size(); ++i) {
+    if (j[i] < n)
+      indices.push_back(j[i]);
+  }
 
-  for (size_t i = 0; i <= n; i++) {
+  for (size_t i = 0; i < n; ++i) {
     if (std::find(j.begin(), j.end(), i) == j.end()) {
       indices.push_back(i);
     }
   }
 
-  return indices;
-}
-
-template <typename Container> Container fordJohnsonSortMaxima(const Container &maxima) {
-  Container chain;
-
-  if (maxima.empty())
-    return chain;
-
-  chain.push_back(maxima[0]);
-
-  size_t blockSize = 1;
-  while (blockSize < maxima.size()) {
-    size_t start = blockSize;
-    size_t end = std::min(blockSize * 2, maxima.size());
-
-    for (size_t i = start; i < end; ++i) {
-      typename Container::iterator pos = std::lower_bound(chain.begin(), chain.end(), maxima[i], CountingLess());
-      chain.insert(pos, maxima[i]);
-    }
-
-    blockSize *= 2;
+  if (indices.size() == (size - n - 1)) {
+    indices.push_back(n);
   }
 
-  return chain;
+  return indices;
+}
+template <typename Container> Container fordJohnsonSortMaxima(const Container &maxima) {
+  if (maxima.size() <= 1)
+    return maxima;
+
+  size_t mid = maxima.size() / 2;
+
+  Container left(maxima.begin(), maxima.begin() + mid);
+  Container right(maxima.begin() + mid, maxima.end());
+
+  left = fordJohnsonSortMaxima(left);
+  right = fordJohnsonSortMaxima(right);
+
+  Container merged;
+  std::merge(left.begin(), left.end(), right.begin(), right.end(), std::back_inserter(merged), Counter());
+
+  return merged;
 }
 
-template <typename Container, typename PairContainer>
-void sort(PairContainer &initialPairs, Container &chain, size_t size) {
+template <typename BoolContainer, typename Container, typename PairContainer> void sort(PairContainer &initialPairs, Container &chain, size_t size) {
 
-  if (initialPairs.size() <= 1) {
+  if (initialPairs.size() == 1) {
     chain.push_back(initialPairs[0].first);
     chain.push_back(initialPairs[0].second);
     return;
@@ -119,7 +138,7 @@ void sort(PairContainer &initialPairs, Container &chain, size_t size) {
   Container sortedMaxima = fordJohnsonSortMaxima(maxima);
 
   PairContainer sortedPairs;
-  std::vector<bool> used(initialPairs.size(), false);
+  BoolContainer used(initialPairs.size(), false);
 
   for (size_t i = 0; i < sortedMaxima.size(); ++i) {
     size_t m = sortedMaxima[i];
@@ -137,12 +156,13 @@ void sort(PairContainer &initialPairs, Container &chain, size_t size) {
 
   Container order = jacobsthalOrdering<Container>(size - chain.size(), size);
 
-  for (size_t i = 0; i < sortedPairs.size(); i++) {
-    size_t minVal = sortedPairs[i].first;
-    size_t maxVal = sortedPairs[i].second;
+  for (size_t i = 0; i < order.size(); i++) {
+
+    size_t minVal = sortedPairs[order[i]].first;
+    size_t maxVal = sortedPairs[order[i]].second;
 
     if (minVal != maxVal) {
-      typename Container::iterator pos = std::lower_bound(chain.begin(), chain.end(), minVal, CountingLess());
+      typename Container::iterator pos = std::lower_bound(chain.begin(), chain.end(), minVal, Counter());
       chain.insert(pos, minVal);
     }
   }
@@ -167,9 +187,7 @@ template <typename Container, typename PairContainer> PairContainer pairNumbers(
   for (typename PairContainer::iterator it = pairs.begin(); it != pairs.end(); it++) {
     if ((*it).first > (*it).second) {
       VEC_COUNT++;
-      size_t temp = (*it).first;
-      (*it).first = (*it).second;
-      (*it).second = temp;
+      std::swap((*it).first, (*it).second);
     }
   }
   return pairs;
