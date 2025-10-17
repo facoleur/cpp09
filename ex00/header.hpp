@@ -20,6 +20,4 @@ bool isDirectory(const char *path);
 
 bool isValidDate(const std::string &date);
 
-std::string retrievePreviousDate(const std::string &date);
-std::string findClosestEntry(const std::map<std::string, double> &data,
-                             const std::string &date);
+std::string findClosestEntry(const std::map<std::string, double> &data, const std::string &date);

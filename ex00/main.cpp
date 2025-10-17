@@ -81,8 +81,7 @@ void compute(std::ifstream &inputfile, std::map<std::string, double> &data) {
   std::getline(inputfile, header);
 
   header = removeAllWhitespace(header);
-  if (header.find("date") == std::string::npos ||
-      header.find("value") == std::string::npos) {
+  if (header.find("date") == std::string::npos || header.find("value") == std::string::npos) {
     throw std::runtime_error("Error: header is not valid.");
   }
 
@@ -100,8 +99,10 @@ void compute(std::ifstream &inputfile, std::map<std::string, double> &data) {
       const std::string closestDate = findClosestEntry(data, parsedLine.date);
       const double price = data[closestDate];
 
-      std::cout << closestDate << " => " << price << " = "
-                << price * parsedLine.units << std::endl;
+      // std::cout << parsedLine.date << std::endl;
+      // std::cout << closestDate << std::endl;
+
+      std::cout << closestDate << " => " << price << " = " << price * parsedLine.units << std::endl;
 
     } catch (std::exception &e) {
       std::cout << e.what() << std::endl;

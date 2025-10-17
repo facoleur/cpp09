@@ -4,81 +4,22 @@
 
 #include "header.hpp"
 
-std::string retrievePreviousDate(const std::string &date) {
-
-  int day = atoi(date.substr(8, 2).c_str());
-  int month = atoi(date.substr(5, 2).c_str());
-  int year = atoi(date.substr(0, 4).c_str());
-
-  if (day > 1) {
-    day--;
-  } else if (month > 1) {
-    month--;
-    if (month == 2) {
-      if (year % 4 == 0)
-        day = 29;
-      else
-        day = 28;
-    } else {
-      if (month < 8) {
-        if (month % 2 == 0) {
-          day = 30;
-        } else {
-          day = 31;
-        }
-      } else {
-        if (month % 2 == 0) {
-          day = 31;
-        } else {
-          day = 30;
-        }
-      }
-    }
-  } else {
-    year--;
-    day = 31;
-    month = 12;
-  }
-
-  std::string dayStr;
-  std::string monthStr;
-  std::string yearStr;
-
-  if (day > 9) {
-    dayStr = itoa(day);
-  } else {
-    dayStr = "0" + itoa(day);
-  }
-  if (month > 9) {
-    monthStr = itoa(month);
-  } else {
-    monthStr = "0" + itoa(month);
-  }
-  yearStr = itoa(year);
-
-  std::string newDate = yearStr + "-" + monthStr + "-" + dayStr;
-
-  return newDate;
-}
-
-std::string findClosestEntry(const std::map<std::string, double> &data,
-                             const std::string &date) {
-  if (date < data.begin()->first)
+std::string findClosestEntry(const std::map<std::string, double> &data, const std::string &date) {
+  if (date <= data.begin()->first)
     return data.begin()->first;
 
-  if (date > data.rbegin()->first)
+  if (date >= data.rbegin()->first)
     return data.rbegin()->first;
 
-  std::string foundDate;
+  std::map<std::string, double>::const_iterator it = data.lower_bound(date);
 
-  for (std::string d = date; d != data.begin()->first;
-       d = retrievePreviousDate(d)) {
-    for (std::map<std::string, double>::const_iterator it = data.begin();
-         it != data.end(); it++) {
-      if (it->first == d)
-        return d;
-    }
-  }
+  if (it->first == date)
+    return date;
+
+  --it;
+
+  return it->first;
+
   return "";
 }
 
