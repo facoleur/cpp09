@@ -4,7 +4,12 @@
 
 size_t VEC_COUNT = 0;
 
+std::vector<size_t> recursive_maxima_sort(std::vector<size_t> &vect);
+
 int main(int ac, const char **av) {
+
+  (void)ac;
+  (void)av;
 
   if (ac < 3) {
     std::cout << "Usage: " << av[0] << " <list of positive integers>" << std::endl;
@@ -16,8 +21,7 @@ int main(int ac, const char **av) {
   std::vector<size_t> vecSorted;
   try {
     parse<std::vector<size_t> >(av, vec);
-    std::vector<std::pair<size_t, size_t> > vecPair = pairNumbers<std::vector<size_t>, std::vector<std::pair<size_t, size_t> > >(vec);
-    sort<std::vector<bool>, std::vector<size_t>, std::vector<std::pair<size_t, size_t> > >(vecPair, vecSorted, vec.size());
+    vecSorted = recursive_maxima_sort<std::vector<size_t> >(vec);
   } catch (std::exception &e) {
     std::cout << e.what() << std::endl;
     return 1;
@@ -30,8 +34,7 @@ int main(int ac, const char **av) {
   std::deque<size_t> deqSorted;
   try {
     parse<std::deque<size_t> >(av, deq);
-    std::deque<std::pair<size_t, size_t> > deqPair = pairNumbers<std::deque<size_t>, std::deque<std::pair<size_t, size_t> > >(deq);
-    sort<std::deque<bool>, std::deque<size_t>, std::deque<std::pair<size_t, size_t> > >(deqPair, deqSorted, deq.size());
+    deqSorted = recursive_maxima_sort<std::deque<size_t> >(deq);
   } catch (std::exception &e) {
     std::cout << e.what() << std::endl;
     return 1;
@@ -40,8 +43,8 @@ int main(int ac, const char **av) {
   int deqEnd = clock();
   double deqDurationSeconds = double(deqEnd - deqStart) / CLOCKS_PER_SEC;
 
-  printVector(vec, "before: ");
-  printVector(vecSorted, "after:  ");
+  print_vector(vec, "before: ");
+  print_vector(vecSorted, "after:  ");
 
   std::cout << "time to process a range of " << vec.size() << " elements with std::vector : " << std::setprecision(10) << vecDurationSeconds << "s"
             << std::endl;

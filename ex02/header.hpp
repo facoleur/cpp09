@@ -24,16 +24,14 @@ struct Counter {
 };
 
 // utils
-void printPairs(std::vector<std::pair<size_t, size_t> > &, const std::string &title = "");
-void printVector(std::vector<std::pair<size_t, size_t> > &v);
-void printVector(std::vector<size_t> &, const std::string & = "");
+void print_pairs(std::vector<std::pair<size_t, size_t> > &, const std::string &title = "");
+void print_vector(std::vector<std::pair<size_t, size_t> > &v);
+void print_vector(std::vector<size_t> &, const std::string & = "");
 
 // algo templates
 template <typename Container> void parse(const char **, Container &);
-template <typename Container, typename PairContainer> PairContainer pairNumbers(Container &numbers);
 template <typename Container> Container jacobsthal(size_t);
-template <typename Container> Container jacobsthalOrdering(size_t, size_t);
-template <typename Container> Container fordJohnsonSortMaxima(const Container &);
-template <typename Container, typename PairContainer> void sort(PairContainer &, Container &, size_t);
+template <typename Container> Container get_order(size_t, size_t);
+template <typename Container> Container recursive_maxima_sort(Container &);
 
 #include "algo.tpp"

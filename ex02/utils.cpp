@@ -3,7 +3,7 @@
 #include "header.hpp"
 #include <algorithm>
 
-void printPairs(std::vector<std::pair<size_t, size_t> > &pairs, const std::string &title) {
+void print_pairs(std::vector<std::pair<size_t, size_t> > &pairs, const std::string &title) {
   std::cout << title << std::endl;
 
   for (std::vector<std::pair<size_t, size_t> >::iterator it = pairs.begin(); it != pairs.end(); ++it) {
@@ -12,14 +12,14 @@ void printPairs(std::vector<std::pair<size_t, size_t> > &pairs, const std::strin
   std::cout << std::endl;
 }
 
-void printVector(std::vector<std::pair<size_t, size_t> > &v) {
+void print_vector(std::vector<std::pair<size_t, size_t> > &v) {
   for (std::vector<std::pair<size_t, size_t> >::iterator it = v.begin(); it != v.end(); ++it) {
     std::cout << "(" << (*it).first << ", " << (*it).second << ")" << std::endl;
   }
   std::cout << std::endl;
 }
 
-void printVector(std::vector<size_t> &v, const std::string &title) {
+void print_vector(std::vector<size_t> &v, const std::string &title) {
   if (!title.empty())
     std::cout << title;
 

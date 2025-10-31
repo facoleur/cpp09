@@ -67,6 +67,29 @@ template <typename Container> void parse(const char **av, Container &numbers) {
   }
 }
 
+template <typename Container> void sort_pairs(Container &vect) {
+  for (size_t i = 0; i < vect.size() - 1; i += 2) {
+    if (vect[i] > vect[i + 1])
+      std::swap(vect[i], vect[i + 1]);
+  }
+}
+
+template <typename Container> Container get_minima(const Container &vect) {
+  Container minima;
+  for (size_t i = 0; i + 1 < vect.size(); i += 2)
+    minima.push_back(vect[i]);
+  if (vect.size() % 2 != 0)
+    minima.push_back(vect.back());
+  return minima;
+}
+
+template <typename Container> Container get_maxima(const Container &vect) {
+  Container maxima;
+  for (size_t i = 1; i < vect.size(); i += 2)
+    maxima.push_back(vect[i]);
+  return maxima;
+}
+
 template <typename Container> Container jacobsthal(size_t n) {
   Container j;
   j.push_back(0);
@@ -84,7 +107,7 @@ template <typename Container> Container jacobsthal(size_t n) {
   return j;
 }
 
-template <typename Container> Container jacobsthalOrdering(size_t n, size_t size) {
+template <typename Container> Container get_order(size_t n, size_t size) {
   Container indices;
   Container j = jacobsthal<Container>(n);
 
@@ -105,90 +128,50 @@ template <typename Container> Container jacobsthalOrdering(size_t n, size_t size
 
   return indices;
 }
-template <typename Container> Container fordJohnsonSortMaxima(const Container &maxima) {
-  if (maxima.size() <= 1)
-    return maxima;
 
-  size_t mid = maxima.size() / 2;
+template <typename Container> void print_container(Container &v, const std::string &title) {
+  if (!title.empty())
+    std::cout << title;
 
-  Container left(maxima.begin(), maxima.begin() + mid);
-  Container right(maxima.begin() + mid, maxima.end());
+  for (typename Container::iterator it = v.begin(); it != v.end(); ++it)
+    std::cout << (*it) << " ";
 
-  left = fordJohnsonSortMaxima(left);
-  right = fordJohnsonSortMaxima(right);
-
-  Container merged;
-  std::merge(left.begin(), left.end(), right.begin(), right.end(), std::back_inserter(merged), Counter());
-
-  return merged;
+  std::cout << std::endl;
 }
 
-template <typename BoolContainer, typename Container, typename PairContainer> void sort(PairContainer &initialPairs, Container &chain, size_t size) {
+template <typename Container> Container sort(Container &vect) {
+  Container maxima = get_maxima<Container>(vect);
+  Container sortedMaximas = recursive_maxima_sort(maxima);
 
-  if (initialPairs.size() == 1) {
-    chain.push_back(initialPairs[0].first);
-    chain.push_back(initialPairs[0].second);
-    return;
-  }
+  Container minima = get_minima<Container>(vect);
 
-  Container maxima;
-  for (size_t i = 0; i < initialPairs.size(); ++i)
-    maxima.push_back(initialPairs[i].second);
+  Container chain;
 
-  Container sortedMaxima = fordJohnsonSortMaxima(maxima);
+  chain.insert(minima[0]);
 
-  PairContainer sortedPairs;
-  BoolContainer used(initialPairs.size(), false);
+  Container order = get_order(maxima, vect);
 
-  for (size_t i = 0; i < sortedMaxima.size(); ++i) {
-    size_t m = sortedMaxima[i];
-    for (size_t j = 0; j < initialPairs.size(); ++j) {
-      if (!used[j] && initialPairs[j].second == m) {
-        sortedPairs.push_back(initialPairs[j]);
-        used[j] = true;
-        break;
-      }
-    }
-  }
-
-  for (size_t i = 0; i < sortedPairs.size(); ++i)
-    chain.push_back(sortedPairs[i].second);
-
-  Container order = jacobsthalOrdering<Container>(size - chain.size(), size);
-
-  for (size_t i = 0; i < order.size(); i++) {
-
-    size_t minVal = sortedPairs[order[i]].first;
-    size_t maxVal = sortedPairs[order[i]].second;
-
-    if (minVal != maxVal) {
-      typename Container::iterator pos = std::lower_bound(chain.begin(), chain.end(), minVal, Counter());
-      chain.insert(pos, minVal);
-    }
+  for (size_t i = 0; i < maxima.size(); ++i) {
+    size_t index = order[i];
+    typename Container::iterator it = std::lower_bound(chain.begin(), chain.end(), maxima[index]);
+    chain.insert(it, maxima[index]);
   }
 }
 
-template <typename Container, typename PairContainer> PairContainer pairNumbers(Container &numbers) {
-  PairContainer pairs;
+template <typename Container> Container recursive_maxima_sort(Container &vect) {
+  sort_pairs(vect);
+  if (vect.size() <= 2)
+    return vect;
 
-  for (typename Container::iterator it = numbers.begin(); it != numbers.end();) {
-    typename Container::iterator next = it;
-    next++;
+  Container minima = get_minima<Container>(vect);
+  Container maxima = get_maxima<Container>(vect);
 
-    if (next != numbers.end()) {
-      pairs.push_back(std::make_pair(*it, *next));
-      it = ++next;
-    } else {
-      pairs.push_back(std::make_pair(*it, *it));
-      break;
-    }
+  Container sorted = recursive_maxima_sort(maxima);
+
+  for (size_t i = 0; i < minima.size(); ++i) {
+    typename Container::iterator it = std::lower_bound(sorted.begin(), sorted.end(), minima[i]);
+    sorted.insert(it, minima[i]);
   }
 
-  for (typename PairContainer::iterator it = pairs.begin(); it != pairs.end(); it++) {
-    if ((*it).first > (*it).second) {
-      VEC_COUNT++;
-      std::swap((*it).first, (*it).second);
-    }
-  }
-  return pairs;
+  return sorted;
 }
