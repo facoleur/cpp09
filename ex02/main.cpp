@@ -11,7 +11,7 @@ int main(int ac, const char **av) {
   (void)ac;
   (void)av;
 
-  if (ac < 3) {
+  if (ac < 2`) {
     std::cout << "Usage: " << av[0] << " <list of positive integers>" << std::endl;
     return 1;
   }

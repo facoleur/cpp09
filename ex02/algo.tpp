@@ -25,7 +25,6 @@ template <typename T> std::ostream &operator<<(std::ostream &os, const std::dequ
 }
 
 template <typename Container> void parse(const char **av, Container &numbers) {
-  Container dup;
 
   if (!av[2]) {
     const char *str = av[1];
@@ -41,7 +40,6 @@ template <typename Container> void parse(const char **av, Container &numbers) {
         throw std::runtime_error("Error: duplicate number");
 
       numbers.push_back(n);
-      dup.push_back(n);
 
       str = e;
     }
@@ -63,7 +61,6 @@ template <typename Container> void parse(const char **av, Container &numbers) {
       throw std::runtime_error("Error: duplicate number");
 
     numbers.push_back(n);
-    dup.push_back(n);
   }
 }
 
